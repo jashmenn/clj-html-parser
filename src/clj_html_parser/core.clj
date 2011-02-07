@@ -1,3 +1,4 @@
+
 (ns clj-html-parser.core
   (:require
    [clojure.contrib.io :as io]
@@ -54,11 +55,35 @@
 (defmethod get-elements-by-name [TagNode String] [node tag]
            (.getElementsByName node tag true))
 
+(defn ensure-ends-with 
+  "ensure s ends in char"
+  [s char]
+  (if (re-find (java.util.regex.Pattern/compile (str char "$")) s) 
+               s (str s char)))
+
+(defn #^URI resolve-href
+"Given URL and HREF resolves the HREF, possibly relative to that URL.
+Returns a URI
+
+Examples:
+source-url   href     -> url
+http://a.com foo.html -> http://a.com/foo.html
+http://a.com http://www.google.com -> http://www.google.com
+
+Note: this is needed becauyse the default URI .resolve is unintuitive see:
+
+;; (.resolve (URI. \"http://a.com\") \"foo.html\")
+;;  -> #<URI http://a.comfoo.html>
+"
+  [source-url href]
+  (let [surl (ensure-ends-with source-url "/")]
+     (.resolve (convert-url-to-uri surl)
+               (preprocess-href href))))
+
 (defn href-to-url [href url]
   (try
     (let [href (su/trim href)
-          uri #^URI (.resolve (convert-url-to-uri url)
-                              (preprocess-href href))]
+          uri #^URI (resolve-href url href)]
       (if (.getHost uri)
         (canonicalize-url uri)
         nil))

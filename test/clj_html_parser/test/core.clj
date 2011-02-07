@@ -1,3 +1,4 @@
+
 (ns clj-html-parser.test.core
   (:use [clj-html-parser.core] :reload)
   (:use [clojure.test]))
@@ -23,3 +24,15 @@
 
 (deftest strip-whitespace-from-hrefs
   (is (= "http://yakkstr.com/users/ddonnell" (href-to-url "/users/ddonnell " "http://yakkstr.com"))))
+
+
+(deftest test-resolving-hrefs
+  (is (= "http://a.com/foo.html" 
+         (str (resolve-href "http://a.com" "foo.html"))))
+  (is (= "http://a.com/foo.html" 
+         (str (resolve-href "http://a.com/" "foo.html"))))
+  (is (= "http://a.com/foo.html" 
+         (str (resolve-href "http://a.com/" "/foo.html"))))
+  (is (= "http://www.google.com/foo.html" 
+         (str (resolve-href "http://a.com" "http://www.google.com/foo.html"))))
+  )
